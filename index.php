@@ -25,7 +25,12 @@ if (isset($_GET['action'])) {
         }
 
         // Перемещаем файл
-        rename($uploadDir . $currentDir . $fileToMove, $uploadDir . $destination . '/' . $fileToMove);
+        if (rename($uploadDir . $currentDir . $fileToMove, $uploadDir . $destination . '/' . $fileToMove)) {
+            header('Location: index.php?dir=' . urlencode($currentDir));
+            exit;
+        } else {
+            echo 'Ошибка при перемещении файла.';
+        }
     } elseif ($action === 'create_folder' && isset($_POST['folder_name'])) {
         $folderName = $_POST['folder_name'];
         $currentDir = isset($_GET['dir']) ? $_GET['dir'] : '';
@@ -215,7 +220,7 @@ foreach ($items as $item) {
             $fileSize = filesize($filePath);
             ?>
             <tr>
-                <td><?php echo $file; ?></td>
+                <td><a href="<?php echo $filePath; ?>" download><?php echo $file; ?></a></td>
                 <td>Файл</td>
                 <td><?php echo formatFileSize($fileSize); ?></td>
                 <td class="actions">
@@ -245,3 +250,4 @@ function formatFileSize($size) {
     return round($formattedSize, 2) . ' ' . $units[$unitIndex];
 }
 ?>
+
