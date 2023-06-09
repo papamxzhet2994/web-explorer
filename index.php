@@ -291,7 +291,7 @@ foreach ($items as $item) {
 
     <div class="file-forms">
         <form action="index.php?action=add&dir=<?php echo $currentDir; ?>" method="post" enctype="multipart/form-data">
-            <p>Вы можете добавить файл, загрузить, создать свой текстовый файл или добавить папку с помощью кнопок которые распологаются ниже:</p>
+            <p>Вы можете загрузить или создать свой текстовый файл или добавить папку с помощью кнопок которые распологаются ниже:</p>
         <button type="button" class="create-folder-btn" id="createFolderBtn">Создать папку</button>
             <label for="file-upload" class="browse-btn">Загрузить</label>
             <input type="file" id="file-upload" name="file" style="display: none;" onchange="updateFileName(this)">
@@ -410,7 +410,7 @@ foreach ($items as $item) {
 
         <?php foreach ($directories as $dir) : ?>
             <tr>
-                <td><a href="index.php?dir=<?php echo urlencode($currentDir . $dir . '/'); ?>"><?php echo $dir; ?></a></td>
+                <td><a href="index.php?dir=<?php echo urlencode($currentDir . $dir . '/'); ?>"><span style="padding-right: 5px">&#128193;</span><?php echo $dir; ?></a></td>
                 <td>Папка</td>
                 <td>-</td>
                 <td class="actions">
@@ -427,7 +427,7 @@ foreach ($items as $item) {
             ?>
             <tr>
 
-                <td><a href="<?php echo $filePath; ?>" download><?php echo $file; ?></a></td>
+                <td><a href="<?php echo $filePath; ?>" download><span style="padding-right: 5px">&#128196;</span><?php echo $file; ?></a></td>
                 <td>Файл</td>
                 <td><?php echo formatFileSize($fileSize); ?></td>
                 <td class="actions">
