@@ -22,22 +22,23 @@ if (isset($_GET['action'])) {
             // Удаляем файл
             unlink($filePath);
         }
-    } elseif ($action === 'move' && isset($_GET['file']) && isset($_GET['destination'])) {
-        $fileToMove = $_GET['file'];
-        $destination = $_GET['destination'];
-        $currentDir = isset($_GET['dir']) ? $_GET['dir'] : '';
+        elseif ($action === 'move' && isset($_GET['file']) && isset($_GET['destination'])) {
+            $fileToMove = $_GET['file'];
+            $destination = $_GET['destination'];
+            $currentDir = isset($_GET['dir']) ? $_GET['dir'] : '';
 
-        // Проверяем, существует ли целевая папка
-        if (!is_dir($uploadDir . $destination)) {
-            mkdir($uploadDir . $destination, 0777, true);
-        }
+            // Проверяем, существует ли целевая папка
+            if (!is_dir($uploadDir . $destination)) {
+                mkdir($uploadDir . $destination, 0777, true);
+            }
 
-        // Перемещаем файл
-        if (rename($uploadDir . $currentDir . $fileToMove, $uploadDir . $destination . '/' . $fileToMove)) {
-            header('Location: index.php?dir=' . urlencode($currentDir));
-            exit;
-        } else {
-            echo 'Ошибка при перемещении файла.';
+            // Перемещаем файл
+            if (rename($uploadDir . $currentDir . $fileToMove, $uploadDir . $destination . '/' . $fileToMove)) {
+                header('Location: index.php?dir=' . urlencode($currentDir));
+                exit;
+            } else {
+                echo 'Ошибка при перемещении файла.';
+            }
         }
     } elseif ($action === 'create_folder' && isset($_POST['folder_name'])) {
         $folderName = $_POST['folder_name'];
@@ -203,7 +204,82 @@ foreach ($items as $item) {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #000000;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
             font-size: 13px;
+            margin: 10px 0;
+        }
+
+        button:hover {
+            background-color: #656565;
+        }
+
+        /* Модальное окно создания файла */
+        #createFileModal {
+            display: none;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        #createFileModal .modal-content {
+            background-color: #fefefe;
+
+            padding: 20px;
+            width: 100%;
+            height: 100%;
+        }
+
+        textarea {
+            width: 95%;
+            min-height: 200px;
+            height: 300px;
+            border: none;
+            resize: vertical;
+            outline: none;
+            font-size: 16px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+
+        }
+
+        .create-folder-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #000000;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .create-folder-btn:hover {
+            background-color: #656565;
+        }
+
+        .create-folder-input,
+        .cancel-btn {
+            display: none;
+        }
+
+        .create-folder-input.show,
+        .cancel-btn.show {
+            display: inline-block;
         }
     </style>
 </head>
@@ -213,25 +289,104 @@ foreach ($items as $item) {
 <div class="container">
     <h2><?php echo $currentDir; ?></h2>
 
-    <form action="index.php?action=add&dir=<?php echo $currentDir; ?>" method="post" enctype="multipart/form-data" class="file-forms">
-        <label for="file-upload" class="browse-btn">Обзор</label>
-        <input type="file" id="file-upload" name="file" style="display: none;" onchange="updateFileName(this)">
-        <span id="file-name"></span>
-        <input type="submit" value="Добавить" class="add-btn">
-    </form>
+    <div class="file-forms">
+        <form action="index.php?action=add&dir=<?php echo $currentDir; ?>" method="post" enctype="multipart/form-data">
+            <label for="file-upload" class="browse-btn">Обзор</label>
+            <input type="file" id="file-upload" name="file" style="display: none;" onchange="updateFileName(this)">
+            <span id="file-name"></span>
+            <input type="submit" value="Добавить" class="add-btn">
+        </form>
+        <button onclick="openCreateFileModal()" class="create-folder-btn">Создать файл</button>
+    </div>
+
+
+    <div id="createFileModal" style="display: none;">
+        <div class="modal-content">
+            <h3>Создать файл</h3>
+        <input type="text" id="fileNameInput" placeholder="Имя файла">
+        <textarea id="fileContentInput" placeholder="Содержимое файла"></textarea>
+        <button onclick="createFileRequest()">Создать</button>
+        <button onclick="closeCreateFileModal()">Отмена</button>
+        </div>
+    </div>
 
     <script>
         function updateFileName(input) {
             const fileName = input.files[0].name;
             document.getElementById('file-name').innerText = fileName;
         }
+
+        function openCreateFileModal() {
+            document.getElementById('createFileModal').style.display = 'block';
+        }
+
+        function closeCreateFileModal() {
+            document.getElementById('createFileModal').style.display = 'none';
+        }
+
+        function createFileRequest() {
+            const fileName = document.getElementById('fileNameInput').value + '.txt';
+            const fileContent = document.getElementById('fileContentInput').value;
+
+            if (fileName && fileContent) {
+                const formData = new FormData();
+                formData.append('file_name', fileName);
+                formData.append('file_content', fileContent);
+
+                fetch('createFile.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.text())
+                    .then(result => {
+                        console.log(result);
+                        // Обработка успешного создания файла
+                        closeCreateFileModal();
+                        location.reload(); // Обновляем страницу, чтобы обновить список файлов
+
+                        // Очистка полей ввода
+                        document.getElementById('fileNameInput').value = '';
+                        document.getElementById('fileContentInput').value = '';
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        // Обработка ошибки
+                    });
+            }
+        }
     </script>
 
 
+
     <form action="index.php?action=create_folder&dir=<?php echo $currentDir; ?>" method="post" class="file-forms">
-        <input type="text" name="folder_name" placeholder="Имя папки" required>
-        <input type="submit" value="Создать" class="create-btn">
+        <button type="button" class="create-folder-btn" id="createFolderBtn">Создать папку</button>
+        <input type="text" name="folder_name" placeholder="Имя папки" class="create-folder-input" required>
+        <input type="submit" value="Создать" class="create-folder-btn create-folder-input" id="createBtn">
+        <button type="button" class="cancel-btn" id="cancelBtn">Отмена</button>
     </form>
+
+
+    <script>
+        let createFolderBtn = document.getElementById('createFolderBtn');
+        let createFolderInput = document.getElementsByClassName('create-folder-input');
+        let createBtn = document.getElementById('createBtn');
+        let cancelBtn = document.getElementById('cancelBtn');
+
+        createFolderBtn.addEventListener('click', function() {
+            createFolderBtn.style.display = 'none';
+            createFolderInput[0].classList.add('show');
+            createBtn.classList.add('show');
+            cancelBtn.classList.add('show');
+        });
+
+        cancelBtn.addEventListener('click', function() {
+            createFolderInput[0].classList.remove('show');
+            createBtn.classList.remove('show');
+            cancelBtn.classList.remove('show');
+            createFolderBtn.style.display = 'inline-block';
+        });
+    </script>
+
 
     <table>
         <tr>
@@ -260,7 +415,7 @@ foreach ($items as $item) {
                 <td>-</td>
                 <td class="actions">
                     <a href="index.php?action=delete&file=<?php echo urlencode($currentDir . $dir); ?>">Удалить</a>
-                    <a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>
+                    <!--<a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>-->
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -271,12 +426,13 @@ foreach ($items as $item) {
             $fileSize = filesize($filePath);
             ?>
             <tr>
+
                 <td><a href="<?php echo $filePath; ?>" download><?php echo $file; ?></a></td>
                 <td>Файл</td>
                 <td><?php echo formatFileSize($fileSize); ?></td>
                 <td class="actions">
                     <a href="index.php?action=delete&file=<?php echo urlencode($currentDir . $file); ?>">Удалить</a>
-                    <a href="index.php?action=move&file=<?php echo urlencode($currentDir . $file); ?>">Переместить</a>
+                    <!--<a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>-->
                 </td>
             </tr>
         <?php endforeach; ?>
