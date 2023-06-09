@@ -291,15 +291,16 @@ foreach ($items as $item) {
 
     <div class="file-forms">
         <form action="index.php?action=add&dir=<?php echo $currentDir; ?>" method="post" enctype="multipart/form-data">
-            <label for="file-upload" class="browse-btn">Обзор</label>
+            <p>Вы можете добавить файл, загрузить, создать свой текстовый файл или добавить папку с помощью кнопок которые распологаются ниже:</p>
+        <button type="button" class="create-folder-btn" id="createFolderBtn">Создать папку</button>
+            <label for="file-upload" class="browse-btn">Загрузить</label>
             <input type="file" id="file-upload" name="file" style="display: none;" onchange="updateFileName(this)">
             <span id="file-name"></span>
             <input type="submit" value="Добавить" class="add-btn">
         </form>
-        <button onclick="openCreateFileModal()" class="create-folder-btn">Создать файл</button>
     </div>
 
-
+    <button onclick="openCreateFileModal()" class="create-folder-btn">Создать файл</button>
     <div id="createFileModal" style="display: none;">
         <div class="modal-content">
             <h3>Создать файл</h3>
@@ -359,7 +360,6 @@ foreach ($items as $item) {
 
 
     <form action="index.php?action=create_folder&dir=<?php echo $currentDir; ?>" method="post" class="file-forms">
-        <button type="button" class="create-folder-btn" id="createFolderBtn">Создать папку</button>
         <input type="text" name="folder_name" placeholder="Имя папки" class="create-folder-input" required>
         <input type="submit" value="Создать" class="create-folder-btn create-folder-input" id="createBtn">
         <button type="button" class="cancel-btn" id="cancelBtn">Отмена</button>
