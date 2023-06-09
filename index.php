@@ -13,7 +13,15 @@ if (isset($_GET['action'])) {
         move_uploaded_file($fileTmpName, $uploadDir . $currentDir . $fileName);
     } elseif ($action === 'delete' && isset($_GET['file'])) {
         $fileToDelete = $_GET['file'];
-        unlink($uploadDir . $fileToDelete);
+        $filePath = $uploadDir . $fileToDelete;
+
+        if (is_dir($filePath)) {
+            // Удаляем папку и ее содержимое
+            deleteDirectory($filePath);
+        } elseif (is_file($filePath)) {
+            // Удаляем файл
+            unlink($filePath);
+        }
     } elseif ($action === 'move' && isset($_GET['file']) && isset($_GET['destination'])) {
         $fileToMove = $_GET['file'];
         $destination = $_GET['destination'];
@@ -34,8 +42,43 @@ if (isset($_GET['action'])) {
     } elseif ($action === 'create_folder' && isset($_POST['folder_name'])) {
         $folderName = $_POST['folder_name'];
         $currentDir = isset($_GET['dir']) ? $_GET['dir'] : '';
-        mkdir($uploadDir . $currentDir . $folderName);
+        $newFolderPath = $uploadDir . $currentDir . $folderName;
+
+        // Проверяем, существует ли папка с таким именем
+        if (!is_dir($newFolderPath)) {
+            if (mkdir($newFolderPath, 0777, true)) {
+                header('Location: index.php?dir=' . urlencode($currentDir));
+                exit;
+            } else {
+                echo 'Ошибка при создании папки.';
+            }
+        } else {
+            echo 'Папка с таким именем уже существует.';
+        }
     }
+}
+
+// Функция для удаления папки и ее содержимого
+function deleteDirectory($dirPath) {
+    if (!is_dir($dirPath)) {
+        return;
+    }
+
+    $files = scandir($dirPath);
+    foreach ($files as $file) {
+        if ($file === '.' || $file === '..') {
+            continue;
+        }
+
+        $filePath = $dirPath . '/' . $file;
+        if (is_dir($filePath)) {
+            deleteDirectory($filePath);
+        } else {
+            unlink($filePath);
+        }
+    }
+
+    rmdir($dirPath);
 }
 
 // Получение списка файлов и папок в текущей директории
@@ -77,7 +120,7 @@ foreach ($items as $item) {
         }
 
         .container {
-            max-width: 800px;
+            max-width: 100%;
             margin: 20px auto;
             padding: 20px;
             background-color: #f9f9f9;
@@ -153,6 +196,14 @@ foreach ($items as $item) {
         .add-btn:hover,
         .create-btn:hover {
             background-color: #656565;
+        }
+
+        input[type="text"] {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -250,4 +301,3 @@ function formatFileSize($size) {
     return round($formattedSize, 2) . ' ' . $units[$unitIndex];
 }
 ?>
-
