@@ -22,7 +22,7 @@ if (isset($_GET['action'])) {
             // Удаляем файл
             unlink($filePath);
         }
-        elseif ($action === 'move' && isset($_GET['file']) && isset($_GET['destination'])) {
+        if ($action === 'move' && isset($_GET['file']) && isset($_GET['destination'])) {
             $fileToMove = $_GET['file'];
             $destination = $_GET['destination'];
             $currentDir = isset($_GET['dir']) ? $_GET['dir'] : '';
@@ -106,6 +106,7 @@ foreach ($items as $item) {
 <html>
 <head>
     <title>File Explorer</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -279,7 +280,7 @@ foreach ($items as $item) {
         .cancel-btn.show {
             display: inline-block;
         }
-        
+
     </style>
 </head>
 <body>
@@ -387,6 +388,60 @@ foreach ($items as $item) {
         });
     </script>
 
+    <script>
+        let dragItem; // Элемент, который перетаскивается
+
+        function handleDragStart(e) {
+            dragItem = this;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault(); // Разрешение операции перетаскивания
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation(); // Предотвращение перенаправления
+            }
+
+            // Отправка запроса на сервер для перемещения файла или папки
+            let destination = this.parentNode.getAttribute('data-dir');
+            let fileToMove = dragItem.getElementsByTagName('a')[0].getAttribute('href');
+
+            // Отправка AJAX-запроса для перемещения файла или папки
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', 'index.php?action=move&file=' + encodeURIComponent(fileToMove) + '&destination=' + encodeURIComponent(destination));
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        // Обработка успешного перемещения файла или папки
+                        location.reload(); // Обновляем страницу, чтобы обновить список файлов
+                    } else {
+                        console.error('Ошибка при перемещении файла или папки.');
+                    }
+                }
+            };
+            xhr.send();
+
+            return false;
+        }
+
+        // Назначение обработчиков событий для элементов списка файлов и папок
+        let items = document.querySelectorAll('tr[draggable="true"]');
+        [].forEach.call(items, function(item) {
+            item.addEventListener('dragstart', handleDragStart, false);
+            item.addEventListener('dragover', handleDragOver, false);
+            item.addEventListener('drop', handleDrop, false);
+        });
+    </script>
+
+
 
     <table>
         <tr>
@@ -409,13 +464,13 @@ foreach ($items as $item) {
 
 
         <?php foreach ($directories as $dir) : ?>
-            <tr>
+            <tr draggable="true">
                 <td><a href="index.php?dir=<?php echo urlencode($currentDir . $dir . '/'); ?>"><span style="padding-right: 5px">&#128193;</span><?php echo $dir; ?></a></td>
                 <td>Папка</td>
                 <td>-</td>
                 <td class="actions">
                     <a href="index.php?action=delete&file=<?php echo urlencode($currentDir . $dir); ?>">Удалить</a>
-                    <a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>
+                    <!--<a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>-->
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -432,7 +487,7 @@ foreach ($items as $item) {
                 <td><?php echo formatFileSize($fileSize); ?></td>
                 <td class="actions">
                     <a href="index.php?action=delete&file=<?php echo urlencode($currentDir . $file); ?>">Удалить</a>
-                    <a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>
+                    <!--<a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>-->
                 </td>
             </tr>
         <?php endforeach; ?>
