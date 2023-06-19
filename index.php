@@ -182,8 +182,7 @@ foreach ($items as $item) {
             background-color: #656565;
         }
 
-        .add-btn,
-        .create-btn {
+        .add-btn{
             display: inline-block;
             padding: 8px 16px;
             background-color: #000000;
@@ -194,8 +193,7 @@ foreach ($items as $item) {
             font-size: 13px;
         }
 
-        .add-btn:hover,
-        .create-btn:hover {
+        .add-btn:hover:hover {
             background-color: #656565;
         }
 
@@ -281,6 +279,7 @@ foreach ($items as $item) {
         .cancel-btn.show {
             display: inline-block;
         }
+        
     </style>
 </head>
 <body>
@@ -288,6 +287,7 @@ foreach ($items as $item) {
 
 <div class="container">
     <h2><?php echo $currentDir; ?></h2>
+
 
     <div class="file-forms">
         <form action="index.php?action=add&dir=<?php echo $currentDir; ?>" method="post" enctype="multipart/form-data">
@@ -299,18 +299,6 @@ foreach ($items as $item) {
             <input type="submit" value="Добавить" class="add-btn">
         </form>
     </div>
-
-    <button onclick="openCreateFileModal()" class="create-folder-btn">Создать файл</button>
-    <div id="createFileModal" style="display: none;">
-        <div class="modal-content">
-            <h3>Создать файл</h3>
-        <input type="text" id="fileNameInput" placeholder="Имя файла">
-        <textarea id="fileContentInput" placeholder="Содержимое файла"></textarea>
-        <button onclick="createFileRequest()">Создать</button>
-        <button onclick="closeCreateFileModal()">Отмена</button>
-        </div>
-    </div>
-
     <script>
         function updateFileName(input) {
             const fileName = input.files[0].name;
@@ -356,6 +344,18 @@ foreach ($items as $item) {
             }
         }
     </script>
+
+    <button onclick="openCreateFileModal()" class="create-folder-btn">Создать файл</button>
+    <div id="createFileModal" style="display: none;">
+        <div class="modal-content">
+            <h3>Создать файл</h3>
+        <input type="text" id="fileNameInput" placeholder="Имя файла">
+        <textarea id="fileContentInput" placeholder="Содержимое файла"></textarea>
+        <button onclick="createFileRequest()">Создать</button>
+        <button onclick="closeCreateFileModal()">Отмена</button>
+        </div>
+    </div>
+
 
 
 
@@ -415,7 +415,7 @@ foreach ($items as $item) {
                 <td>-</td>
                 <td class="actions">
                     <a href="index.php?action=delete&file=<?php echo urlencode($currentDir . $dir); ?>">Удалить</a>
-                    <!--<a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>-->
+                    <a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -432,7 +432,7 @@ foreach ($items as $item) {
                 <td><?php echo formatFileSize($fileSize); ?></td>
                 <td class="actions">
                     <a href="index.php?action=delete&file=<?php echo urlencode($currentDir . $file); ?>">Удалить</a>
-                    <!--<a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>-->
+                    <a href="index.php?action=move&file=<?php echo urlencode($currentDir . $dir); ?>">Переместить</a>
                 </td>
             </tr>
         <?php endforeach; ?>
