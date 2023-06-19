@@ -106,182 +106,7 @@ foreach ($items as $item) {
 <html>
 <head>
     <title>File Explorer</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        h1 {
-            background-color: #333;
-            color: #fff;
-            padding: 20px;
-            margin: 0;
-        }
-
-        .container {
-            max-width: 100%;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table th,
-        table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ccc;
-        }
-
-        table th {
-            background-color: #f2f2f2;
-        }
-
-        .actions a {
-            color: #333;
-            text-decoration: none;
-            margin-right: 10px;
-        }
-
-        .actions a:hover {
-            color: #ff0000;
-        }
-
-        .file-forms {
-            margin-top: 20px;
-        }
-
-        .file-forms input[type="file"],
-        .file-forms input[type="text"] {
-            margin-right: 10px;
-        }
-
-        .file-forms input[type="file"] {
-            display: none;
-        }
-
-        .browse-btn {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: #000000;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .browse-btn:hover {
-            background-color: #656565;
-        }
-
-        .add-btn{
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: #000000;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .add-btn:hover:hover {
-            background-color: #656565;
-        }
-
-        input[type="text"] {
-            width: 200px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        button {
-            padding: 8px 16px;
-            background-color: #000000;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-            margin: 10px 0;
-        }
-
-        button:hover {
-            background-color: #656565;
-        }
-
-        /* Модальное окно создания файла */
-        #createFileModal {
-            display: none;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
-        }
-
-        #createFileModal .modal-content {
-            background-color: #fefefe;
-
-            padding: 20px;
-            width: 100%;
-            height: 100%;
-        }
-
-        textarea {
-            width: 95%;
-            min-height: 200px;
-            height: 300px;
-            border: none;
-            resize: vertical;
-            outline: none;
-            font-size: 16px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-
-        }
-
-        .create-folder-btn {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: #000000;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .create-folder-btn:hover {
-            background-color: #656565;
-        }
-
-        .create-folder-input,
-        .cancel-btn {
-            display: none;
-        }
-
-        .create-folder-input.show,
-        .cancel-btn.show {
-            display: inline-block;
-        }
-
-    </style>
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <h1>File Explorer</h1>
@@ -297,14 +122,21 @@ foreach ($items as $item) {
             <label for="file-upload" class="browse-btn">Загрузить</label>
             <input type="file" id="file-upload" name="file" style="display: none;" onchange="updateFileName(this)">
             <span id="file-name"></span>
-            <input type="submit" value="Добавить" class="add-btn">
+            <input type="submit" value="Добавить" class="add-btn" id="addBtn" style="display: none;">
         </form>
     </div>
     <script>
         function updateFileName(input) {
             const fileName = input.files[0].name;
             document.getElementById('file-name').innerText = fileName;
+            const addButton = document.getElementById('addBtn');
+            if (fileName) {
+                addButton.style.display = 'inline-block';
+            } else {
+                addButton.style.display = 'none';
+            }
         }
+
 
         function openCreateFileModal() {
             document.getElementById('createFileModal').style.display = 'block';
@@ -395,24 +227,22 @@ foreach ($items as $item) {
             dragItem = this;
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/html', this.innerHTML);
+            e.dataTransfer.setData('text/plain', this.id); // Добавленная строка
         }
 
         function handleDragOver(e) {
-            if (e.preventDefault) {
-                e.preventDefault(); // Разрешение операции перетаскивания
-            }
+            e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
-            return false;
         }
 
         function handleDrop(e) {
             if (e.stopPropagation) {
-                e.stopPropagation(); // Предотвращение перенаправления
+                e.stopPropagation();
             }
 
-            // Отправка запроса на сервер для перемещения файла или папки
             let destination = this.parentNode.getAttribute('data-dir');
-            let fileToMove = dragItem.getElementsByTagName('a')[0].getAttribute('href');
+            let fileToMoveId = e.dataTransfer.getData('text/plain'); // Получение идентификатора перемещаемого элемента
+            let fileToMove = document.getElementById(fileToMoveId).getElementsByTagName('a')[0].getAttribute('href');
 
             // Отправка AJAX-запроса для перемещения файла или папки
             let xhr = new XMLHttpRequest();
@@ -420,8 +250,7 @@ foreach ($items as $item) {
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     if (xhr.status === 200) {
-                        // Обработка успешного перемещения файла или папки
-                        location.reload(); // Обновляем страницу, чтобы обновить список файлов
+                        location.reload();
                     } else {
                         console.error('Ошибка при перемещении файла или папки.');
                     }
@@ -439,6 +268,7 @@ foreach ($items as $item) {
             item.addEventListener('dragover', handleDragOver, false);
             item.addEventListener('drop', handleDrop, false);
         });
+
     </script>
 
 
@@ -480,9 +310,8 @@ foreach ($items as $item) {
             $filePath = $currentPath . '/' . $file;
             $fileSize = filesize($filePath);
             ?>
-            <tr>
-
-                <td><a href="<?php echo $filePath; ?>" download><span style="padding-right: 5px">&#128196;</span><?php echo $file; ?></a></td>
+            <tr draggable="true">
+                <td><a href="<?php echo $filePath; ?>" download><span style="padding-right: 5px;">&#128196;</span><?php echo $file; ?></a></td>
                 <td>Файл</td>
                 <td><?php echo formatFileSize($fileSize); ?></td>
                 <td class="actions">
@@ -499,7 +328,8 @@ foreach ($items as $item) {
 
 <?php
 // Функция для форматирования размера файла
-function formatFileSize($size) {
+function formatFileSize($size): string
+{
     $units = array('B', 'KB', 'MB', 'GB', 'TB');
     $formattedSize = $size;
     $unitIndex = 0;
