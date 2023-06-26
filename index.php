@@ -25,7 +25,7 @@ if (isset($_GET['action'])) {
     } elseif ($action === 'move' && isset($_GET['file']) && isset($_GET['destination'])) {
         $fileToMove = $_GET['file'];
         $destination = $_GET['destination'];
-        $currentDir = $_GET['destination'];
+        $currentDir = $_GET['dir'] ?? '';
 
         // Проверяем, существует ли целевая папка
         if (!is_dir($uploadDir . $destination)) {
@@ -34,7 +34,7 @@ if (isset($_GET['action'])) {
 
         // Перемещаем файл
         if (rename($uploadDir . $currentDir . $fileToMove, $uploadDir . $destination . '/' . $fileToMove)) {
-            header('Location: index.php?dir=' . urlencode($currentDir));
+            header('Location: index.php?dir=' . urlencode($destination));
             exit;
         } else {
             echo 'Ошибка при перемещении файла.';
@@ -75,7 +75,9 @@ function deleteDirectory($dirPath):void {
         if (is_dir($filePath)) {
             deleteDirectory($filePath);
         } else {
-            unlink($filePath);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
         }
     }
 
@@ -114,11 +116,10 @@ foreach ($items as $item) {
     <div class="container">
         <h2><?php echo $currentDir; ?></h2>
 
-
         <div class="file-forms">
             <form action="index.php?action=add&dir=<?php echo $currentDir; ?>" method="post" enctype="multipart/form-data">
                 <button type="button" class="create-folder-btn" id="createFolderBtn">Создать папку</button>
-                <label for="file-upload" class="browse-btn">Загрузить</label>
+                <button type="button" class="browse-btn" id="file-upload-btn" onclick="document.getElementById('file-upload').click()">Загрузить</button>
                 <input type="file" id="file-upload" name="file" style="display: none;" onchange="updateFileName(this)">
                 <span id="file-name"></span>
                 <input type="submit" value="Добавить" class="add-btn" id="addBtn" style="display: none;">
@@ -187,9 +188,6 @@ foreach ($items as $item) {
                 <button onclick="closeCreateFileModal()">Отмена</button>
             </div>
         </div>
-
-
-
 
         <form action="index.php?action=create_folder&dir=<?php echo $currentDir; ?>" method="post" class="file-forms">
             <input type="text" name="folder_name" placeholder="Имя папки" class="create-folder-input" required>
@@ -294,12 +292,12 @@ foreach ($items as $item) {
 
 
             <?php foreach ($directories as $dir) : ?>
-                <tr>
-                    <td><a draggable="true" data-dir="<?php echo urlencode($currentDir); ?>" href="index.php?dir=<?php echo urlencode($currentDir . $dir . '/'); ?>"><span style="padding-right: 5px">&#128193;</span><?php echo $dir; ?></a></td>
+                <tr draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+                    <td><a data-dir="<?php echo urlencode($currentDir); ?>" href="index.php?dir=<?php echo urlencode($currentDir . $dir . '/'); ?>"><span style="padding-right: 5px">&#128193;</span><?php echo $dir; ?></a></td>
                     <td>Папка</td>
                     <td>-</td>
                     <td class="actions">
-                        <a href="#" onclick="confirmDelete('<?php echo urlencode($currentDir . $dir); ?>')">Удалить</a>
+                        <a href="#" class="delete-btn" onclick="confirmDelete('<?php echo urlencode($currentDir . $dir); ?>')">Удалить</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -309,8 +307,8 @@ foreach ($items as $item) {
                 $filePath = $currentPath . '/' . $file;
                 $fileSize = filesize($filePath);
                 ?>
-                <tr>
-                    <td><a draggable="true" data-dir="<?php echo urlencode($currentDir); ?>" href="<?php echo $filePath; ?>" download><span style="padding-right: 5px;">&#128196;</span><?php echo $file; ?></a></td>
+                <tr draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+                    <td><a data-dir="<?php echo urlencode($currentDir); ?>" href="<?php echo $filePath; ?>" download><span style="padding-right: 5px;">&#128196;</span><?php echo $file; ?></a></td>
                     <td>Файл</td>
                     <td><?php echo formatFileSize($fileSize); ?></td>
                     <td class="actions">

@@ -2,25 +2,37 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f9f9f9;
-    color: #333;
+    background-color: #333;
+    color: #eee;
     font-size: 14px;
     line-height: 1.5;
 }
 
 h1 {
-    background-color: #333;
+    background-color: #222;
     color: #fff;
     padding: 20px;
     margin: 0;
     font-size: 24px;
 }
 
+a {
+    color: #eeeeee;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+a:hover {
+    color: #ff0000;
+    text-decoration: underline;
+}
+
 .container {
     max-width: 100%;
     margin: 20px auto;
     padding: 20px;
-    background-color: #f9f9f9;
+    background-color: #333;
 }
 
 table {
@@ -32,16 +44,16 @@ table th,
 table td {
     padding: 10px;
     text-align: left;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #777;
 }
 
 table th {
-    background-color: #f2f2f2;
+    background-color: #555;
     font-weight: bold;
 }
 
 .actions a {
-    color: #333;
+    color: #eee;
     text-decoration: none;
     margin-right: 10px;
 }
@@ -66,7 +78,7 @@ table th {
 .browse-btn {
     display: inline-block;
     padding: 8px 16px;
-    background-color: #000000;
+    background-color: #000;
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -75,13 +87,13 @@ table th {
 }
 
 .browse-btn:hover {
-    background-color: #656565;
+    background-color: #555;
 }
 
-.add-btn{
+.add-btn {
     display: inline-block;
     padding: 8px 16px;
-    background-color: #000000;
+    background-color: #000;
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -89,21 +101,23 @@ table th {
     font-size: 13px;
 }
 
-.add-btn:hover:hover {
-    background-color: #656565;
+.add-btn:hover {
+    background-color: #555;
 }
 
 input[type="text"] {
     width: 200px;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #777;
     border-radius: 8px;
     margin-bottom: 20px;
+    background-color: #333;
+    color: #eee;
 }
 
 button {
     padding: 8px 16px;
-    background-color: #000000;
+    background-color: #000;
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -113,7 +127,7 @@ button {
 }
 
 button:hover {
-    background-color: #656565;
+    background-color: #555;
 }
 
 /* Модальное окно создания файла */
@@ -124,16 +138,17 @@ button:hover {
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
+    overflow-x: hidden;
     animation: fadeIn 0.5s forwards;
 }
 
 #createFileModal .modal-content {
-    background-color: #fefefe;
+    background-color: #222;
     padding: 20px;
-    width: 100%;
+    width: 97,5%;
     height: 100%;
     border-radius: 10px;
+    color: #eee;
 }
 
 textarea {
@@ -144,15 +159,17 @@ textarea {
     outline: none;
     font-size: 16px;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #777;
     border-radius: 8px;
     animation: resizeTextarea 1s;
+    background-color: #333;
+    color: #eee;
 }
 
 .create-folder-btn {
     display: inline-block;
     padding: 8px 16px;
-    background-color: #000000;
+    background-color: #000;
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -161,7 +178,7 @@ textarea {
 }
 
 .create-folder-btn:hover {
-    background-color: #656565;
+    background-color: #555;
 }
 
 .create-folder-input,
@@ -180,7 +197,6 @@ span {
 
 .modal {
     position: fixed;
-    top: 0;
     right: 0;
     z-index: 9999;
     width: 20%;
@@ -191,26 +207,26 @@ span {
 }
 
 .modal-content1 {
-    background-color: #fefefe;
+    background-color: #222;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     animation: fadeIn 0.5s ease-in-out;
+    color: #eee;
 }
 
 .modal-content1 h3 {
     margin-top: 0;
-    color: #444;
+    color: #ccc;
     text-align: center;
     font-size: 20px;
     margin-bottom: 10px;
 }
 
-
 .modal-content1 button {
     display: inline-block;
     padding: 8px 16px;
-    background-color: #000000;
+    background-color: #000;
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -219,7 +235,7 @@ span {
 }
 
 .modal-content1 button:hover {
-    background-color: #656565;
+    background-color: #555;
 }
 
 .modal-content1 button:not(:last-child) {
@@ -227,7 +243,7 @@ span {
 }
 
 tr:hover {
-    background-color: #f2f2f2;
+    background-color: #333;
     transition: background-color 0.3s ease;
 }
 
