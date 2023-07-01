@@ -1,0 +1,15 @@
+{
+    "name": "papamxzhet/wed-explorer",
+    "autoload": {
+        "psr-4": {
+            "Papamxzhet\\WedExplorer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "papamxzhet2994",
+            "email": "pvova4370@gmail.com"
+        }
+    ],
+    "require": {}
+}

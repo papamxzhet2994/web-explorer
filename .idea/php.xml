@@ -16,7 +16,7 @@
   </component>
   <component name="PhpUnit">
     <phpunit_settings>
-      <PhpUnitSettings load_method="PHPUNIT_PHAR" configuration_file_path="$PROJECT_DIR$/../../../../Program Files/PHP/phpunit.xml" custom_loader_path="" phpunit_phar_path="$PROJECT_DIR$/../../../../Program Files/PHP/phpunit-10.2.3.phar" />
+      <PhpUnitSettings load_method="PHPUNIT_PHAR" configuration_file_path="$PROJECT_DIR$/../../../../Program Files/PHP/phpunit.xml" custom_loader_path="" phpunit_phar_path="$PROJECT_DIR$/phpunit.phar" />
     </phpunit_settings>
   </component>
   <component name="PsalmOptionsConfiguration">

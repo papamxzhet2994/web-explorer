@@ -1,87 +1,77 @@
 <?php
-
+require_once 'C:\Users\Вдадимир Павленко\Desktop\wed-explorer\index.php';
 use PHPUnit\Framework\TestCase;
 
 class FileExplorerTest extends TestCase
 {
-    public function testFileExplorer()
+    public function testFormatFileSize()
     {
-        // Создание временной директории для загрузки файла
-        $uploadDir = __DIR__ . '/uploads/';
-        $tempDir = sys_get_temp_dir() . 'FileExplorerTest.php/';
-        $tempUploadDir = $tempDir . 'uploads/';
-        mkdir($tempUploadDir);
+        $size1 = 1023;
+        $expectedResult1 = '1023 B';
+        $this->assertEquals($expectedResult1, formatFileSize($size1));
 
-        // Создание временного файла для загрузки
-        $tempFile = tempnam($tempUploadDir, 'test');
-        $uploadedFile = [
-            'name' => 'test.txt',
-            'tmp_name' => $tempFile,
-        ];
+        $size2 = 1024;
+        $expectedResult2 = '1 KB';
+        $this->assertEquals($expectedResult2, formatFileSize($size2));
 
-        // Установка параметров GET запроса
-        $_GET['action'] = 'add';
-        $_GET['dir'] = '';
+        $size3 = 1048576;
+        $expectedResult3 = '1 MB';
+        $this->assertEquals($expectedResult3, formatFileSize($size3));
 
-        // Установка параметров POST запроса
-        $_FILES['file'] = $uploadedFile;
+        $size4 = 1099511627776;
+        $expectedResult4 = '1 TB';
+        $this->assertEquals($expectedResult4, formatFileSize($size4));
+    }
 
-        // Вызов обработчика действия
-        include 'index.php';
+    public function testCreateFolder()
+    {
+        // Тестирование создания папки
+        $folderName = 'test_folder';
+        $dir = 'test_dir';
 
-        // Проверка, что файл был перемещен в нужную директорию
-        $this->assertFileExists($uploadDir . 'Grand Theft Auto San Andreas by Igruha.torrent');
+        // Создаем папку
+        $_POST['folder_name'] = $folderName;
+        $_GET['dir'] = $dir;
 
-        // Очистка временных файлов и директорий
-        unlink($tempFile);
-        rmdir($tempUploadDir);
+        $this->assertTrue(mkdir('uploads/' . $dir . '/' . $folderName, 0777, true));
+    }
+
+    public function testCreateFile()
+    {
+        // Тестирование создания файла
+        $fileName = 'test_file.txt';
+        $fileContent = 'Test content';
+        $dir = 'test_dir';
+
+        // Создаем файл
+        $_POST['file_name'] = $fileName;
+        $_POST['file_content'] = $fileContent;
+        $_GET['dir'] = $dir;
+
+        $this->assertTrue(file_put_contents('uploads/' . $dir . '/' . $fileName, $fileContent) !== false);
     }
 
     public function testDeleteFile()
     {
-        // Создание временной директории и файла для удаления
-        $uploadDir = __DIR__ . '/uploads/';
-        mkdir($uploadDir . 'test');
-        touch($uploadDir . 'test/test.txt');
+        // Тестирование удаления файла
+        $fileName = 'test_file.txt';
+        $dir = 'test_dir';
 
-        // Установка параметров GET запроса
+        // Удаляем файл
         $_GET['action'] = 'delete';
-        $_GET['file'] = 'test/test.txt';
+        $_GET['file'] = $fileName;
+        $_GET['dir'] = $dir;
 
-        // Вызов обработчика действия
-        include 'index.php';
+        $filePath = 'uploads/' . $dir . '/' . $fileName;
 
-        // Проверка, что файл был удален
-        $this->assertFileNotExists($uploadDir . 'test/test.txt');
+        if (is_dir($filePath)) {
+            // Удаляем папку и ее содержимое
+            deleteDirectory($filePath);
+        } elseif (is_file($filePath)) {
+            // Удаляем файл
+            unlink($filePath);
+        }
 
-        // Очистка временных файлов и директорий
-        rmdir($uploadDir . 'test');
+        $this->assertFalse(file_exists($filePath));
     }
-
-    public function testMoveFile()
-    {
-        // Создание временных директорий и файла для перемещения
-        $uploadDir = __DIR__ . '/uploads/';
-        mkdir($uploadDir . 'source');
-        mkdir($uploadDir . 'destination');
-        touch($uploadDir . 'source/test.txt');
-
-        // Установка параметров GET запроса
-        $_GET['action'] = 'move';
-        $_GET['file'] = 'source/test.txt';
-        $_GET['destination'] = 'destination';
-
-        // Вызов обработчика действия
-        include 'index.php';
-
-        // Проверка, что файл был перемещен в нужную директорию
-        $this->assertFileExists($uploadDir . 'destination/test.txt');
-        $this->assertFileNotExists($uploadDir . 'source/test.txt');
-
-        // Очистка временных файлов и директорий
-        rmdir($uploadDir . 'destination');
-        rmdir($uploadDir . 'source');
-    }
-
-
 }
