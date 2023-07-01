@@ -1,8 +1,6 @@
 <?php
-header('Content-Type: text/html; charset=utf-8');
-$uploadDir = 'uploads/';
+$uploadDir = "uploads/";
 $currentDir = $_GET['dir'] ?? '';
-
 $currentPath = $uploadDir . $currentDir . '/';
 
 // Обработка действий пользователя
@@ -16,16 +14,14 @@ if (isset($_GET['action'])) {
         $currentDir = $_GET['dir'] ?? '';
         move_uploaded_file($fileTmpName, $currentPath . $fileName);
     } elseif ($action === 'delete' && isset($_GET['file'])) {
-        $fileToDelete = basename($_GET['file']);
+        $fileToDelete = $_GET['file'];
         $filePath = $uploadDir . $fileToDelete;
 
         if (is_dir($filePath)) {
             // Удаляем папку и ее содержимое
-            setlocale(LC_ALL, 'ru_RU.UTF-8');
             deleteDirectory($filePath);
         } elseif (is_file($filePath)) {
             // Удаляем файл
-            setlocale(LC_ALL, 'ru_RU.UTF-8');
             unlink($filePath);
         }
     } elseif ($action === 'move' && isset($_GET['file']) && isset($_GET['destination'])) {
@@ -39,8 +35,8 @@ if (isset($_GET['action'])) {
         }
 
         // Перемещаем файл или папку
-        if (rename($uploadDir . $currentDir . $fileToMove, $uploadDir . $destination . '/' . urlencode($fileToMove))) {
-            header('Location: index.php?dir=' . rawurlencode($destination));
+        if (rename($uploadDir . $currentDir . '/' . $fileToMove, $uploadDir . $destination . '/' . $fileToMove)) {
+            header('Location: index.php?dir=' . $destination);
             exit;
         } else {
             echo 'Ошибка при перемещении файла или папки.';
@@ -50,21 +46,29 @@ if (isset($_GET['action'])) {
         $currentDir = $_GET['dir'] ?? '';
         $newFolderPath = $currentPath . $folderName;
 
-        if (!preg_match('/^[a-zA-Z0-9]+$/', $folderName)) {
-            echo 'Недопустимое имя папки. Пожалуйста, используйте только латинские буквы и цифры.';
-            exit;
-        }
-
         // Проверяем, существует ли папка с таким именем
         if (!is_dir($newFolderPath)) {
             if (mkdir($newFolderPath, 0777, true)) {
-                header('Location: index.php?dir=' . urlencode($currentDir));
+                header('Location: index.php?dir=' . $currentDir);
                 exit;
             } else {
                 echo 'Ошибка при создании папки.';
             }
         } else {
             echo 'Папка с таким именем уже существует.';
+        }
+    } elseif ($action === 'create_file' && isset($_POST['file_name']) && isset($_POST['file_content'])) {
+        $fileName = $_POST['file_name'];
+        $fileContent = $_POST['file_content'];
+        $currentDir = $_GET['dir'] ?? '';
+        $newFilePath = $currentPath . $fileName;
+
+        // Проверяем, существует ли файл с таким именем
+        if (file_put_contents($newFilePath, $fileContent) !== false) {
+            header('Location: index.php?dir=' . $currentDir);
+            exit;
+        } else {
+            echo 'Ошибка при создании файла.';
         }
     }
 }
@@ -83,13 +87,11 @@ function deleteDirectory($dirPath): void
         }
 
         $filePath = $dirPath . '/' . $file;
-        $file = basename($filePath);
 
         if (is_dir($filePath)) {
             deleteDirectory($filePath);
         } else {
             if (file_exists($filePath)) {
-                setlocale(LC_ALL, 'ru_RU.UTF-8');
                 unlink($filePath);
             }
         }
@@ -112,7 +114,7 @@ if (is_dir($currentPath)) {
 
     foreach ($items as $item) {
         $itemPath = $currentPath . '/' . $item;
-        $item = basename($itemPath);
+        $item = basename($item, '.path: $itemPath');
 
         if (is_dir($itemPath)) {
             // Игнорируем "." и ".."
@@ -135,8 +137,8 @@ if (is_dir($currentPath)) {
 
 <!DOCTYPE html>
 <html lang="en-ru">
-<meta charset="utf-8">
 <head>
+    <meta charset="utf-8">
     <title>File Explorer</title>
     <link rel="stylesheet" href="./style.css">
 </head>
@@ -144,10 +146,10 @@ if (is_dir($currentPath)) {
 <h1>File Explorer</h1>
 
 <div class="container">
-    <h2><?= $currentDir ?></h2>
+    <h2><?php echo $currentDir; ?></h2>
 
     <div class="file-forms">
-        <form action="index.php?action=add&dir=<?= urlencode($currentDir) ?>" method="post" enctype="multipart/form-data">
+        <form action="index.php?action=add&dir=<?php echo urlencode($currentDir); ?>" method="post" enctype="multipart/form-data">
             <button type="button" class="create-folder-btn" id="createFolderBtn">Создать папку</button>
             <button type="button" class="browse-btn" id="file-upload-btn" onclick="document.getElementById('file-upload').click()">Загрузить</button>
             <input type="file" id="file-upload" name="file" style="display: none;" onchange="updateFileName(this)">
@@ -192,17 +194,14 @@ if (is_dir($currentPath)) {
                     .then(response => response.text())
                     .then(result => {
                         console.log(result);
-                        // Обработка успешного создания файла
                         closeCreateFileModal();
-                        location.reload(); // Обновляем страницу, чтобы обновить список файлов
+                        location.reload();
 
-                        // Очистка полей ввода
                         document.getElementById('fileNameInput').value = '';
                         document.getElementById('fileContentInput').value = '';
                     })
                     .catch(error => {
                         console.error(error);
-                        // Обработка ошибки
                     });
             }
         }
@@ -210,16 +209,16 @@ if (is_dir($currentPath)) {
 
     <button onclick="openCreateFileModal()" class="create-folder-btn">Создать файл</button>
     <div id="createFileModal" style="display: none;">
-        <div class="modal-content">
+        <form id="createFileForm" action="index.php?action=create_file" class="modal-content">
             <h3>Создать файл</h3>
             <input type="text" id="fileNameInput" placeholder="Имя файла">
             <textarea id="fileContentInput" placeholder="Содержимое файла"></textarea>
-            <button onclick="createFileRequest()">Создать</button>
-            <button onclick="closeCreateFileModal()">Отмена</button>
-        </div>
+            <button type="button" onclick="createFileRequest()">Создать</button>
+            <button type="button" onclick="closeCreateFileModal()">Отмена</button>
+        </form>
     </div>
 
-    <form action="index.php?action=create_folder&dir=<?= $currentDir ?>" method="post" class="file-forms">
+    <form action="index.php?action=create_folder&dir=<?php echo $currentDir; ?>" method="post" class="file-forms">
         <input type="text" name="folder_name" placeholder="Имя папки" class="create-folder-input" required>
         <input type="submit" value="Создать" class="create-folder-btn create-folder-input" id="createBtn">
         <button type="button" class="cancel-btn" id="cancelBtn">Отмена</button>
@@ -254,29 +253,26 @@ if (is_dir($currentPath)) {
             <th>Действия</th>
         </tr>
 
-
-
         <?php if ($currentDir !== '') : ?>
             <?php
             $parentDir = substr($currentDir, 0, strrpos($currentDir, '/', -2));
             ?>
             <tr>
-                <td><a href="index.php?dir=<?= urlencode($parentDir) ?>"><-</a></td>
+                <td><a href="index.php?dir=<?php echo urlencode($parentDir); ?>"><-</a></td>
                 <td>Назад</td>
                 <td>-</td>
                 <td>-</td>
             </tr>
         <?php endif; ?>
 
-
         <?php foreach ($directories as $dir) : ?>
             <tr>
-                <td><a data-dir="<?= urlencode($currentDir) ?>" href="index.php?dir=<?= urlencode($currentDir . $dir . '/') ?>"><span style="padding-right: 5px">&#128193;</span><?= $dir ?></a></td>
+                <td><a data-dir="<?php echo urlencode($currentDir); ?>" href="index.php?dir=<?php echo urlencode($currentDir . $dir . '/'); ?>"><span style="padding-right: 5px">&#128193;</span><?php echo $dir; ?></a></td>
                 <td>Папка</td>
                 <td>-</td>
                 <td class="actions">
-                    <a href="#" class="delete-btn" onclick="confirmDelete('<?= rawurlencode($currentDir . $dir) ?>')">Удалить</a>
-                    <a href="#" onclick="openMoveModal('<?= rawurlencode($currentDir . $dir) ?>')">Переместить</a>
+                    <a href="#" class="delete-btn" onclick="confirmDelete('<?php echo urlencode($currentDir . $dir); ?>')">Удалить</a>
+                    <a href="#" onclick="openMoveModal('<?php echo urlencode($currentDir . $dir); ?>')">Переместить</a>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -287,12 +283,12 @@ if (is_dir($currentPath)) {
             $fileSize = filesize($filePath);
             ?>
             <tr>
-                <td><a data-dir="<?= urlencode($currentDir) ?>" href="index.php?dir=<?= urlencode($currentDir . $file . '/') ?>"><span>&#128196;</span><?= $file ?></a></td>
+                <td><a href="<?php echo $currentPath . $file; ?>" download><span>&#128196;</span><?php echo $file; ?></a></td>
                 <td>Файл</td>
-                <td><?= formatFileSize($fileSize) ?></td>
+                <td><?php echo formatFileSize($fileSize); ?></td>
                 <td class="actions">
-                    <a href="#" class="delete-btn" onclick="confirmDelete('<?= rawurlencode($currentDir . $file) ?>')">Удалить</a>
-                    <a href="#" onclick="openMoveModal('<?= rawurlencode($currentDir . $file) ?>')">Переместить</a>
+                    <a href="#" class="delete-btn" onclick="confirmDelete('<?php echo urlencode($currentDir . $file); ?>')">Удалить</a>
+                    <a href="#" onclick="openMoveModal('<?php echo urlencode($currentDir . $file); ?>')">Переместить</a>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -300,10 +296,11 @@ if (is_dir($currentPath)) {
     <div class="modal" id="moveModal" style="display: none;">
         <div class="modal-content">
             <h3>Перемещение файла или папки</h3>
-            <label for="destinationFolderSelect">Куда:</label><select id="destinationFolderSelect">
+            <label for="destinationFolderSelect">Куда:</label>
+            <select id="destinationFolderSelect">
                 <?php foreach ($directories as $dir) : ?>
                     <?php if ($dir !== $currentDir) : ?>
-                        <option value="<?= urlencode($dir) ?>"><?= $dir ?></option>
+                        <option value="<?php echo urlencode($dir); ?>"><?php echo $dir; ?></option>
                     <?php endif; ?>
                 <?php endforeach; ?>
             </select>
@@ -315,20 +312,20 @@ if (is_dir($currentPath)) {
     <script>
         let moveModal = document.getElementById('moveModal');
         let moveFilePath = '';
-        function openMoveModal(filePath) {
 
+        function openMoveModal(filePath) {
             moveFilePath = filePath;
             moveModal.style.display = 'block';
         }
-        function moveItem() {
 
+        function moveItem() {
             if (moveFilePath) {
                 const destinationFolder = document.getElementById('destinationFolderSelect').value;
                 window.location.href = 'index.php?action=move&file=' + encodeURIComponent(moveFilePath) + '&destination=' + encodeURIComponent(destinationFolder);
             }
         }
-        function cancelMove() {
 
+        function cancelMove() {
             moveFilePath = '';
             moveModal.style.display = 'none';
         }
@@ -355,7 +352,7 @@ if (is_dir($currentPath)) {
         function deleteItem() {
             if (deleteConfirmationFilePath) {
                 let xhr = new XMLHttpRequest();
-                xhr.open('GET', 'index.php?action=delete&file=' + encodeURIComponent(deleteConfirmationFilePath));
+                xhr.open('GET', 'index.php?action=delete&file=' + deleteConfirmationFilePath, true);
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === XMLHttpRequest.DONE) {
                         if (xhr.status === 200) {
